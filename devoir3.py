@@ -293,10 +293,13 @@ def suivi_commande():
         elif reponse == "3":
             List_commandes[choix-1]['statut'] = "Livree"
             hitoriques.append(List_commandes[choix-1])
+            List_commandes.remove(List_commandes[choix-1])
 
         elif reponse == "4":
             List_commandes[choix-1]['statut'] = "Annulee"
             hitoriques.append(List_commandes[choix - 1])
+            List_commandes.remove(List_commandes[choix - 1])
+
 
         else:
             print("Mauvaise reponse")
@@ -361,10 +364,32 @@ def administrator() :
 
     elif admin_reponse == "2" :
         print(f"historiques des vente")
-        for i in range (len(hitoriques)):
-            print(f"Client : {hitoriques[i]['client']}")
-            print(f"Produits : {hitoriques[i]['produits']}")
-            print(f"Statut : {hitoriques[i]['statut']}\n")
+        pizza = 0
+        sandwich = 0
+        jus = 0
+        omelette = 0
+        for h in hitoriques:
+            print(f"Client : {h['client']}")
+            print(f"Produits : {h['produits']}")
+            print(f"Statut : {h['statut']}\n")
+            if h['statut'] == "Livree":
+                for ligne in h['produits']:
+                    for cle in ligne:
+                        if cle == "pizza":
+                            pizza += ligne[cle]
+                        elif cle == "sandwich":
+                            sandwich += ligne[cle]
+                        elif cle == "jus":
+                            jus += ligne[cle]
+                        elif cle == "omelette":
+                            omelette += ligne[cle]
+        print(f"pizza vendu : {pizza}"
+              f"\nsandwich vendu : {sandwich}"
+              f"\njus vendu : {jus}"
+              f"\nomelette vendu : {omelette}")
+
+
+
 
 
 
