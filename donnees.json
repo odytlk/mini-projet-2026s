@@ -1,0 +1,14 @@
+{
+  "stocks": {
+    "farine": 2000,
+    "fromage": 1000,
+    "sauce tomate": 800,
+    "pain": 30,
+    "jambon": 60,
+    "orange": 40,
+    "sucre": 500,
+    "oeuf": 50
+  },
+  "commandes": [],
+  "historiques": []
+}
