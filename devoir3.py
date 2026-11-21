@@ -1,5 +1,5 @@
 # Sujet 1 — Gestion d'une cafétéria universitaire
-#
+#ok
 # Développer une application pour gérer les produits, les recettes,
 # les ingrédients, les clients et les commandes.
 #
