@@ -49,8 +49,9 @@ class stock:
         self.quantite = quantite
 
 
+
     def __str__(self):
-        return f"{self.ingredient} : {self.quantite}"
+        return f"{self.ingredient} : {self.quantite} "
 
 s1 = stock("farine", donnees["stocks"]["farine"])
 s2 = stock("fromage", donnees["stocks"]["fromage"])
@@ -321,8 +322,17 @@ def administrator() :
     admin_reponse=(input("reponse :"))
     if admin_reponse == "1" :
         print(f"stocks de la cafeteriat")
-        for i in range(8):
-            print(i+1,List_stocks[i])
+        t=1
+        alert = ""
+        for i in List_stocks:
+            if i.quantite<= 0:
+                alert = "(stock vide)"
+            elif i.quantite<=70:
+                alert= "(stock faible) "
+            else:
+                alert= "(en stock) "
+            print(f"{t}-{i}, {alert}")
+            t+=1
         print ("--- Pour ajouter des ingredient en stock taper ok ")
         admin_reponse=(input("reponse :"))
         if admin_reponse == "ok" :
