@@ -21,6 +21,7 @@
 
 import json
 
+
 # lien avec le fichier json
 FICHIER_JSON = "donnees.json"
 
@@ -42,6 +43,7 @@ status = ""
 ordre = []
 List_commandes = donnees["commandes"]
 hitoriques = donnees["historiques"]
+
 
 # section de gestion des ingredient
 class stock:
@@ -157,8 +159,6 @@ c1 = etudiant("etudiant")
 c2 = personel("proffeseur")
 
 
-
-
 # section de gestion des achat
 
 def commande() :
@@ -173,8 +173,11 @@ def commande() :
                   f"\n 5- retour "
                   )
         if status.panier != []:
-            print(f"\n{status.panier}")
-            print("vous pouvez encor ajouter d autre produit , sinon")
+            print("-------panier de commande------\n")
+            for i in status.panier:
+                for cle, valeur in i.items() :
+                   print(f"{cle} quantite : {valeur}")
+            print(f"\nvous pouvez encor ajouter d autre produit , sinon")
             print("\n---taper 'ok' pour passer a la caisse---" )
 
     # section de gestion des commandes de produits
@@ -222,6 +225,7 @@ def commande() :
                     print("marci d'avoir passer commande !")
 
                     nouvelle_commande = {
+                        "identifiant" :len(List_commandes) + len(hitoriques) + 1,
                         "client": status.nom,
                         "produits": status.panier.copy(),
                         "statut": "En preparation"
@@ -262,10 +266,6 @@ def commande() :
 
             break
 
-
-
-
-
 # suivi des commandes
 def suivi_commande():
 
@@ -276,49 +276,47 @@ def suivi_commande():
         return
 
     for i in range(len(List_commandes)):
-        print(f"\nCommande numero : {i+1}")
+        print(f"\nCommande numero : {List_commandes[i]["identifiant"]}")
         print(f"Client : {List_commandes[i]['client']}")
         print(f"Produits : {List_commandes[i]['produits']}")
         print(f"Statut : {List_commandes[i]['statut']}")
 
     choix = (input("\nNumero de commande : "))
+    if choix.isdigit() :
+        choix = int(choix)
+        for dictionaire in List_commandes:
+            if choix == dictionaire["identifiant"] :
+                print("\n1- En preparation")
+                print("2- Prete")
+                print("3- Livree")
+                print("4- Annulee")
 
-    if choix.isdigit() and 1<=int(choix) <= len(List_commandes):
-        choix=int(choix)
-        print("\n1- En preparation")
-        print("2- Prete")
-        print("3- Livree")
-        print("4- Annulee")
+                reponse = input("Nouveau statut : ")
 
-        reponse = input("Nouveau statut : ")
+                if reponse == "1":
+                    dictionaire['statut'] = "En preparation"
 
-        if reponse == "1":
-            List_commandes[choix-1]['statut'] = "En preparation"
+                elif reponse == "2":
+                    dictionaire['statut'] = "Prete"
 
-        elif reponse == "2":
-            List_commandes[choix-1]['statut'] = "Prete"
+                elif reponse == "3":
+                    dictionaire['statut'] = "Livree"
+                    hitoriques.append(dictionaire)
+                    List_commandes.remove(dictionaire)
 
-        elif reponse == "3":
-            List_commandes[choix-1]['statut'] = "Livree"
-            hitoriques.append(List_commandes[choix-1])
-            List_commandes.remove(List_commandes[choix-1])
-
-        elif reponse == "4":
-            List_commandes[choix-1]['statut'] = "Annulee"
-            hitoriques.append(List_commandes[choix - 1])
-            List_commandes.remove(List_commandes[choix - 1])
-
-
-        else:
-            print("Mauvaise reponse")
-            return
-
-        print("Statut modifie avec succes")
-        sauvegarder()
-
+                elif reponse == "4":
+                    dictionaire['statut'] = "Annulee"
+                    hitoriques.append(dictionaire)
+                    List_commandes.remove(dictionaire)
+                else:
+                    print("reponse invalide")
+                    break
+                print("Statut modifie avec succes")
+                sauvegarder()
+                break
     else:
-        print("Commande introuvable")
-
+        print("reponse invalide")
+        return
 
 
 
@@ -343,7 +341,8 @@ def administrator() :
                 alert= "(en stock) "
             print(f"{t}-{i}, {alert}")
             t+=1
-        print ("--- Pour ajouter des ingredient en stock taper ok ")
+        print (f"--- Pour ajouter des ingredient en stock taper ok "
+               f"\n-- taper 0 pour retourner --")
         admin_reponse=(input("reponse :"))
         if admin_reponse == "ok" :
             print("inscriver le numero du stock que vous vouler ajouter")
@@ -356,6 +355,8 @@ def administrator() :
             t = admin_reponse-1
             List_stocks[t].quantite+= int(input(f"inscrivez la quantite de {List_stocks[t].ingredient} : "))
             sauvegarder()
+        elif admin_reponse == "0" :
+            return
 
     elif admin_reponse == "2" :
         print(f"historiques des vente")
