@@ -42,6 +42,7 @@ status = ""
 ordre = []
 List_commandes = donnees["commandes"]
 hitoriques = donnees["historiques"]
+
 # section de gestion des ingredient
 class stock:
     def __init__(self,ingredient, quantite):
@@ -146,9 +147,14 @@ class etudiant(client) :
         super().__init__(nom)
         self.reduction = 0.4
 
+class personel(client) :
+    def __init__(self,nom):
+        super().__init__(nom)
+        self.reduction = 0.1
+
 
 c1 = etudiant("etudiant")
-c2 = client("proffeseur")
+c2 = personel("proffeseur")
 
 
 
@@ -195,17 +201,13 @@ def commande() :
                     print(f"\n{1 + i}-{status.panier[i]}  Prix : {status.prix[i]}*{status.quantite[i]} = {somme} HTG")
                     total+=somme
                     choix.append(str(1+i))
-                if status == c1:
-                    print(status.reduction*total)
-                    print (f"total : {total} HTG"
-                           f"\n- STATUS ETUDIANT -reduction de  -{status.reduction*total} HTG "
-                           f"\n Nouveau total {total-(status.reduction*total)} HTG")
-                else:
-                     print(f"total {total} HTG")
+
+                print (f"total : {total} HTG"
+                       f"\n- STATUS {status.nom}-reduction de  -{status.reduction*total} HTG "
+                       f"\n Nouveau total {total-(status.reduction*total)} HTG")
                 print("\npour supprimer une comande inscriver son numero, sinon")
                 print("---taper ok pour valider la comande--")
                 validation = input("reponse : ")
-
 
                 if validation in choix:
                     i = int(validation) - 1
@@ -241,18 +243,24 @@ def commande() :
                 break
 
 
-            if comande_reponse != "0":
-                print(f"panier d'achat"
-                      f"\n {objet}")
-                nb = int(input(f"combien de {objet.produit} ?:"))
-                objet.preparer(nb)
-                if objet.possible == True:
-                    status.achat(objet.produit, nb)
-                    status.prix.append(objet.prix)
-                    status.quantite.append(nb)
-                    ordre.append(objet)
 
+            print(f"panier d'achat"
+                  f"\n {objet}")
+            nb = (input(f"combien de {objet.produit} ?:"))
+            if nb.isdigit() and int(nb)>0:
+                nb = int(nb)
+                objet.preparer(nb)
+            else:
+                print("reponse invalide")
                 break
+
+            if objet.possible == True:
+                status.achat(objet.produit, nb)
+                status.prix.append(objet.prix)
+                status.quantite.append(nb)
+                ordre.append(objet)
+
+            break
 
 
 
@@ -273,10 +281,10 @@ def suivi_commande():
         print(f"Produits : {List_commandes[i]['produits']}")
         print(f"Statut : {List_commandes[i]['statut']}")
 
-    choix = int(input("\nNumero de commande : "))
+    choix = (input("\nNumero de commande : "))
 
-    if choix > 0 and choix <= len(List_commandes):
-
+    if choix.isdigit() and 1<=int(choix) <= len(List_commandes):
+        choix=int(choix)
         print("\n1- En preparation")
         print("2- Prete")
         print("3- Livree")
@@ -326,7 +334,6 @@ def administrator() :
     if admin_reponse == "1" :
         print(f"stocks de la cafeteriat")
         t=1
-        alert = ""
         for i in List_stocks:
             if i.quantite<= 0:
                 alert = "(stock vide)"
@@ -340,27 +347,15 @@ def administrator() :
         admin_reponse=(input("reponse :"))
         if admin_reponse == "ok" :
             print("inscriver le numero du stock que vous vouler ajouter")
-            admin_reponse=(input("reponse :"))
-            match admin_reponse:
-                case"1":
-                    s1.quantite+= int(input("inscrire la quantite :"))
-                case"2":
-                    s2.quantite+= int(input("inscrire la quantite :"))
-                case"3":
-                    s3.quantite+= int(input("inscrire la quantite :"))
-                case"4":
-                    s4.quantite+= int(input("inscrire la quantite :"))
-                case "5":
-                    s5.quantite += int(input("inscrire la quantite :"))
-                case "6":
-                    s6.quantite += int(input("inscrire la quantite :"))
-                case "7":
-                    s7.quantite += int(input("inscrire la quantite :"))
-                case "8":
-                    s8.quantite += int(input("inscrire la quantite :"))
+            admin_reponse0=(input("reponse :"))
+            if admin_reponse0.isdigit() and 1<=int(admin_reponse0) <= len(List_stocks):
+                admin_reponse =int(admin_reponse0)
+            else:
+                print("Mauvaise reponse")
+                return
+            t = admin_reponse-1
+            List_stocks[t].quantite+= int(input(f"inscrivez la quantite de {List_stocks[t].ingredient} : "))
             sauvegarder()
-
-
 
     elif admin_reponse == "2" :
         print(f"historiques des vente")
