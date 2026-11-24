@@ -35,12 +35,10 @@ def sauvegarder():
     with open(FICHIER_JSON, "w", encoding="utf-8") as f:
         json.dump(donnees, f, indent=2, ensure_ascii=False)
 
-
 reponse = "0"
 comande_reponse = "0"
 validation ="0"
 status = ""
-ordre = []
 List_commandes = donnees["commandes"]
 hitoriques = donnees["historiques"]
 
@@ -50,8 +48,6 @@ class stock:
     def __init__(self,ingredient, quantite):
         self.ingredient = ingredient
         self.quantite = quantite
-
-
 
     def __str__(self):
         return f"{self.ingredient} : {self.quantite} "
@@ -102,7 +98,6 @@ class menu:
                 self.possible= False
                 return
 
-
         # Étape 2 : débiter (seulement si tout est bon)
         for nom, requis in self.recette.items():
             for s in self.stock:
@@ -124,7 +119,6 @@ class menu:
         return f"{self.produit} : {self.prix} HTG"
 
 
-
 p1 = menu("pizza", 500,0)
 p2 = menu("sandwich", 250, 0)
 p3 = menu("jus", 150, 0)
@@ -136,13 +130,10 @@ class client :
     def __init__(self,nom):
         self.nom = nom
         self.panier= []
-        self.prix =[]
-        self.quantite = []
         self.historique = []
 
-    def achat(self,produit, quantite):
-        self.panier.append({produit: quantite})
-        print (self.panier)
+    def achat(self, objet, nb):
+        self.panier.append({"objet": objet, "nb": nb})
 
 class etudiant(client) :
     def __init__(self,nom):
@@ -174,9 +165,8 @@ def commande() :
                   )
         if status.panier != []:
             print("-------panier de commande------\n")
-            for i in status.panier:
-                for cle, valeur in i.items() :
-                   print(f"{cle} quantite : {valeur}")
+            for p in status.panier:
+                print(f"{p['objet'].produit} quantite : {p['nb']}")
             print(f"\nvous pouvez encor ajouter d autre produit , sinon")
             print("\n---taper 'ok' pour passer a la caisse---" )
 
@@ -196,14 +186,19 @@ def commande() :
                  return
 
             elif comande_reponse == "ok":
+                if status.panier == []:
+                    print("panier vide, ajoutez un produit d abord")
+                    break
                 total= 0
                 print("panier de commande")
                 choix = []
-                for i in range(len(status.panier)):
-                    somme = status.prix[i] * status.quantite[i]
-                    print(f"\n{1 + i}-{status.panier[i]}  Prix : {status.prix[i]}*{status.quantite[i]} = {somme} HTG")
+                t=1
+                for p in status.panier:
+                    somme = p["objet"].prix * p["nb"]
+                    print(f"\n{t}-{p['objet'].produit}  Prix : {p['objet'].prix}*{p['nb']} = {somme} HTG")
                     total+=somme
-                    choix.append(str(1+i))
+                    choix.append(str(t))
+                    t+=1
 
                 print (f"total : {total} HTG"
                        f"\n- STATUS {status.nom}-reduction de  -{status.reduction*total} HTG "
@@ -214,25 +209,23 @@ def commande() :
 
                 if validation in choix:
                     i = int(validation) - 1
-                    ordre[i].rendre(status.quantite[i])
+                    status.panier[i]["objet"].rendre(status.panier[i]["nb"])
                     status.panier.pop(i)
-                    status.prix.pop(i)
-                    status.quantite.pop(i)
-                    ordre.pop(i)
-
                     break
                 elif validation == "ok":
                     print("marci d'avoir passer commande !")
 
+                    produits = []
+                    for p in status.panier:
+                        produits.append({p["objet"].produit: p["nb"]})
+
                     nouvelle_commande = {
                         "identifiant" :len(List_commandes) + len(hitoriques) + 1,
                         "client": status.nom,
-                        "produits": status.panier.copy(),
+                        "produits": produits,
                         "statut": "En preparation"
                     }
                     status.panier=[]
-                    status.quantite= []
-                    status.prix= []
 
                     List_commandes.append(nouvelle_commande)
                     sauvegarder()
@@ -247,7 +240,6 @@ def commande() :
                 break
 
 
-
             print(f"panier d'achat"
                   f"\n {objet}")
             nb = (input(f"combien de {objet.produit} ?:"))
@@ -259,10 +251,7 @@ def commande() :
                 break
 
             if objet.possible == True:
-                status.achat(objet.produit, nb)
-                status.prix.append(objet.prix)
-                status.quantite.append(nb)
-                ordre.append(objet)
+                status.achat(objet, nb)
 
             break
 
@@ -276,7 +265,7 @@ def suivi_commande():
         return
 
     for i in range(len(List_commandes)):
-        print(f"\nCommande numero : {List_commandes[i]["identifiant"]}")
+        print(f"\nCommande numero : {List_commandes[i]['identifiant']}")
         print(f"Client : {List_commandes[i]['client']}")
         print(f"Produits : {List_commandes[i]['produits']}")
         print(f"Statut : {List_commandes[i]['statut']}")
@@ -284,8 +273,10 @@ def suivi_commande():
     choix = (input("\nNumero de commande : "))
     if choix.isdigit() :
         choix = int(choix)
+        trouve = False
         for dictionaire in List_commandes:
             if choix == dictionaire["identifiant"] :
+                trouve = True
                 print("\n1- En preparation")
                 print("2- Prete")
                 print("3- Livree")
@@ -310,14 +301,15 @@ def suivi_commande():
                     List_commandes.remove(dictionaire)
                 else:
                     print("reponse invalide")
-                    break
+                    return
                 print("Statut modifie avec succes")
                 sauvegarder()
                 break
+        if not trouve:
+            print("commande introuvable")
     else:
         print("reponse invalide")
         return
-
 
 
 # section de gestion de l admin
@@ -341,7 +333,7 @@ def administrator() :
                 alert= "(en stock) "
             print(f"{t}-{i}, {alert}")
             t+=1
-        print (f"--- Pour ajouter des ingredient en stock taper ok "
+        print (f"--- Pour ajouter des ingredient en stock taper ok--- "
                f"\n-- taper 0 pour retourner --")
         admin_reponse=(input("reponse :"))
         if admin_reponse == "ok" :
@@ -353,8 +345,12 @@ def administrator() :
                 print("Mauvaise reponse")
                 return
             t = admin_reponse-1
-            List_stocks[t].quantite+= int(input(f"inscrivez la quantite de {List_stocks[t].ingredient} : "))
-            sauvegarder()
+            q = input(f"inscrivez la quantite de {List_stocks[t].ingredient} : ")
+            if q.isdigit() and int(q) > 0:
+                List_stocks[t].quantite += int(q)
+                sauvegarder()
+            else:
+                print("Quantite invalide")
         elif admin_reponse == "0" :
             return
 
@@ -366,28 +362,24 @@ def administrator() :
         omelette = 0
         for h in hitoriques:
             print(f"Client : {h['client']}")
+            print(f"identifiant : {h['identifiant']}")
             print(f"Produits : {h['produits']}")
             print(f"Statut : {h['statut']}\n")
             if h['statut'] == "Livree":
-                for ligne in h['produits']:
-                    for cle in ligne:
+                for produit in h['produits']:
+                    for cle in produit:
                         if cle == "pizza":
-                            pizza += ligne[cle]
+                            pizza += produit[cle]
                         elif cle == "sandwich":
-                            sandwich += ligne[cle]
+                            sandwich += produit[cle]
                         elif cle == "jus":
-                            jus += ligne[cle]
+                            jus += produit[cle]
                         elif cle == "omelette":
-                            omelette += ligne[cle]
+                            omelette += produit[cle]
         print(f"pizza vendu : {pizza}"
               f"\nsandwich vendu : {sandwich}"
               f"\njus vendu : {jus}"
               f"\nomelette vendu : {omelette}")
-
-
-
-
-
 
     elif admin_reponse == "3" :
         suivi_commande()
@@ -400,7 +392,8 @@ while True :
           f"\nconnecter vous en tans que :"
           f"\n 1- etudiant "
           f"\n 2- proffeseur "
-          f"\n 3- Admin ")
+          f"\n 3- Admin "
+          )
     reponse =(input("reponse :"))
     if reponse == "1" :
         status = c1
